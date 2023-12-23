@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 import static net.kyori.adventure.text.Component.text;
 
 public class Message {
-
-
     private static final PlatformAudience platformAudience = Audiences.getPlatformAudience();
     private TextComponent singleLineMessage;
     private List<TextComponent> multiLineMessages;
@@ -29,6 +27,7 @@ public class Message {
         this.singleLineMessage = text("");
         this.multiLineMessages = new ArrayList<>();
     }
+
     public Message(String singleLineMessage, boolean color) {
         this.singleLineMessage = text(color ? ColorAPI.color(singleLineMessage) : singleLineMessage);
         this.multiLineMessages = new ArrayList<>();
@@ -76,6 +75,7 @@ public class Message {
 
     /**
      * Adds a hover event in the ENTIRE message!
+     *
      * @param event the adding hover event
      * @return the message
      */
@@ -86,6 +86,7 @@ public class Message {
 
     /**
      * Adds a click event in the ENTIRE message!
+     *
      * @param event the adding click event
      * @return the message
      */
@@ -96,11 +97,12 @@ public class Message {
 
     /**
      * Appends multiple components to a single-line message (useful for adding interactive component parts)
+     *
      * @param components the components to append
      * @return the final message
      */
     public Message append(Component... components) {
-        for(Component c : components) {
+        for (Component c : components) {
             this.singleLineMessage = this.singleLineMessage.append(c);
         }
         return this;
@@ -115,11 +117,12 @@ public class Message {
 
     /**
      * Appends multiple messages to a Message (converting it in a multi-line message)
+     *
      * @param lines an optional array of lines to append
      * @return
      */
     public Message appendLines(Component... lines) {
-        if(this.singleLineMessage != null) {
+        if (this.singleLineMessage != null) {
             this.multiLineMessages.add(this.singleLineMessage);
         }
         this.multiLineMessages.addAll(Arrays.stream(lines).map(l -> (TextComponent) l).collect(Collectors.toList()));
@@ -151,43 +154,68 @@ public class Message {
 
     /**
      * Enhanced and recommended version - doesn't use any reflection!
+     *
      * @param audience the senders audience
      */
     public void send(Audience audience) {
-        if(multiLineMessages.isEmpty()) {
+        if (multiLineMessages.isEmpty()) {
             sendRawMessage(audience, singleLineMessage);
-        }
-        else {
+        } else {
             this.multiLineMessages.forEach((msg) -> sendRawMessage(audience, msg));
         }
     }
 
     /**
      * Sends the message
+     *
      * @param commandSender might be console, a Player, or a generic CommandSender
      */
     public void send(Object commandSender) {
         Audience audience;
         try {
             audience = (Audience) platformAudience.getPlayerAudience().invoke(null, commandSender);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
         send(audience);
     }
 
+
+    /**
+     * Sets the single line message of this Message instance to the provided TextComponent.
+     * This method is typically used when you want to replace the current single line message with a new one.
+     *
+     * @param component the TextComponent to set as the single line message
+     * @return this Message instance for chaining
+     */
+    public Message set(TextComponent component) {
+        this.singleLineMessage = component;
+        return this;
+    }
+
+    /**
+     * Sets the multi-line messages of this Message instance to the provided array of TextComponents.
+     * This method is typically used when you want to replace the current multi-line messages with new ones.
+     *
+     * @param textComponents the array of TextComponents to set as the multi-line messages
+     * @return this Message instance for chaining
+     */
+    public Message set(TextComponent... textComponents) {
+        this.multiLineMessages = List.of(textComponents);
+        return this;
+    }
+
     /**
      * Authorized players broadcast
+     *
      * @param permission the required node
      */
     public void broadcast(String permission) {
         Audience audience;
         try {
             audience = (Audience) platformAudience.getPermissionAudience().invoke(null, permission);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
@@ -196,14 +224,14 @@ public class Message {
 
     /**
      * Sends to Audience filtered by some conditions
+     *
      * @param filter the filter
      */
     public void send(Predicate<Object> filter) {
         Audience audience;
         try {
             audience = (Audience) platformAudience.getFilterAudience().invoke(null, filter);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
@@ -217,8 +245,7 @@ public class Message {
         Audience console;
         try {
             console = (Audience) platformAudience.getConsoleAudience().invoke(null);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
@@ -232,8 +259,7 @@ public class Message {
         Audience audience;
         try {
             audience = (Audience) platformAudience.getAllPlayersAudience().invoke(null);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
@@ -247,8 +273,7 @@ public class Message {
         Audience audience;
         try {
             audience = (Audience) platformAudience.getAllAudience().invoke(null);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             platformAudience.sendError();
             return;
         }
@@ -258,14 +283,16 @@ public class Message {
     public Message color() { // no need by default
         if (multiLineMessages.isEmpty()) {
             this.singleLineMessage = (TextComponent) ColorAPI.color(singleLineMessage);
-        } else this.multiLineMessages = ColorAPI.color(getTextList()).stream().map(Component::text).collect(Collectors.toList());
+        } else
+            this.multiLineMessages = ColorAPI.color(getTextList()).stream().map(Component::text).collect(Collectors.toList());
         return this;
     }
 
     public Message decolor() {
         if (multiLineMessages.isEmpty()) {
             this.singleLineMessage = (TextComponent) ColorAPI.decolor(singleLineMessage);
-        } else this.multiLineMessages = ColorAPI.decolor(getTextList()).stream().map(Component::text).collect(Collectors.toList());
+        } else
+            this.multiLineMessages = ColorAPI.decolor(getTextList()).stream().map(Component::text).collect(Collectors.toList());
         return this;
     }
 
@@ -283,10 +310,10 @@ public class Message {
     }
 
     private void sendRawMessage(Audience audience, Component component) {
-        if(this.hoverEvent != null) {
+        if (this.hoverEvent != null) {
             component = component.hoverEvent(this.hoverEvent);
         }
-        if(this.clickEvent != null) {
+        if (this.clickEvent != null) {
             component = component.clickEvent(this.clickEvent);
         }
         audience.sendMessage(component);
